@@ -10,8 +10,8 @@
   "max_steps": 4,
   "torch_threads": 1,
   "models": {
-    "classic": "checkpoints/base/classic.pt",
-    "improved": "checkpoints/base/improved.pt"
+    "classic": "results/train_classic/checkpoint.pt",
+    "improved": "results/train_improved/checkpoint.pt"
   },
   "solvers": [
     "pibt"

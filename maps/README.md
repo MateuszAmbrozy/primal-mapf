@@ -22,8 +22,7 @@ largest connected free component, which must contain at least twice as many
 cells as agents. The current sampler does not read `.scen` files.
 
 Source URLs and file hashes are recorded in [provenance.json](provenance.json).
-The maps match the official downloads, including the copies in the research
-archive.
+The maps match the official downloads.
 
 ## Attribution
 

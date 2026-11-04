@@ -27,11 +27,7 @@ def main():
         if hashlib.sha256(path.read_bytes()).hexdigest() != item['local_sha256'] or not item['normalized_lines_equal']:
             raise ValueError(f'Map provenance mismatch: {path}')
         known[path.name] = path.read_text().splitlines()
-    archive_maps = list((ROOT/'research/historical').rglob('*.map'))
-    for path in archive_maps:
-        if path.name not in known or path.read_text().splitlines() != known[path.name]:
-            raise ValueError(f'Unverified archived map: {path}')
-    print(f'Verified PIBT sources, PRIMAL upstream license, {len(known)} maps and {len(archive_maps)} archived map copies.')
+    print(f'Verified PIBT sources, PRIMAL upstream license, and {len(known)} benchmark maps.')
 
 
 if __name__ == '__main__':

@@ -11,7 +11,7 @@ PIBT, Cooperative A* (CA*), and Conflict-Based Search (CBS) as planning baseline
 ## Fine-tuned models in action
 
 The improved model with map-specific fine-tuned weights, eight agents, and seed
-123. These runs use sequential movement and historical observation settings.
+123. These runs use sequential movement and the variant-specific observation profile.
 Each agent reaches its own goal; colors match agents to goals.
 
 ### Maze — 67 timesteps
@@ -30,6 +30,49 @@ Each agent reaches its own goal; colors match agents to goals.
 These are completed example rollouts, not aggregate benchmark results. The
 corresponding four-agent runs also completed; all six attempts are recorded.
 
+## Benchmark highlights
+
+The plots below summarize 20 attempts per algorithm and agent count in each
+selected dataset. **Makespan is averaged over successful attempts only; lower
+is better.** Read it together with success rate: a missing point means no
+successful attempts. Full training settings and seeds are unavailable for these
+measurements; see [datasets and limitations](research/README.md).
+
+### Algorithm comparison on random maps
+
+| Makespan | Success rate |
+| --- | --- |
+| ![Mean successful makespan for CA*, CBS, classic PRIMAL, and improved PRIMAL](research/results/random/agent_count/plots/agent_count_makespan.png) | ![Success rate for CA*, CBS, classic PRIMAL, and improved PRIMAL](research/results/random/agent_count/plots/agent_count_success_rate.png) |
+
+With 32 agents, improved PRIMAL solved **20/20** attempts with mean makespan
+**48.65**, versus **98.23** for classic PRIMAL (**13/20**) and **43.05** for CA*
+(**20/20**). CBS solved **0/20** at that setting under the experiment's limits.
+[Source CSV](research/results/random/agent_count/raw_agent_count.csv).
+PIBT is available for new evaluations but is not included in this dataset.
+
+### Improved PRIMAL: makespan before and after fine-tuning
+
+Each panel compares the same architecture before and after map-specific
+fine-tuning, across 4, 8, 16, and 32 agents.
+
+| Maze | Rooms | Warehouse |
+| --- | --- | --- |
+| ![Improved PRIMAL makespan before and after fine-tuning on the maze map](research/results/fixed_maps_base_vs_fine_tuned/maze/results/plots/ft_vs_base_IMPROVED_maze_makespan.png) | ![Improved PRIMAL makespan before and after fine-tuning on the room map](research/results/fixed_maps_base_vs_fine_tuned/room/results/plots/ft_vs_base_IMPROVED_room_makespan.png) | ![Improved PRIMAL makespan before and after fine-tuning on the warehouse map](research/results/fixed_maps_base_vs_fine_tuned/warehouse/results/plots/ft_vs_base_IMPROVED_warehouse_makespan.png) |
+
+At **8 agents**, the corresponding CSV measurements are:
+
+| Map / source CSV | Before: mean makespan (solved) | After: mean makespan (solved) |
+| --- | --- | --- |
+| [Maze](research/results/fixed_maps_base_vs_fine_tuned/maze/results/raw_ft_vs_base_IMPROVED_maze.csv) | — (0/20) | 184.89 (19/20) |
+| [Rooms](research/results/fixed_maps_base_vs_fine_tuned/room/results/raw_ft_vs_base_IMPROVED_room.csv) | 191.00 (1/20) | 259.50 (2/20) |
+| [Warehouse](research/results/fixed_maps_base_vs_fine_tuned/warehouse/results/raw_ft_vs_base_IMPROVED_warehouse.csv) | 302.00 (2/20) | 154.75 (20/20) |
+
+Fine-tuning increased completion rates on all three maps at this setting.
+Warehouse's mean successful makespan fell by **48.8%**, while rooms remained
+difficult. Successful subsets differ, so the means are not paired speedups
+on identical solved scenarios. More comparisons, including fine-tuned classic
+PRIMAL and solver baselines, are in [the full results](research/README.md).
+
 ## Models
 
 Both networks use local grid observations, a goal vector, and an LSTM state.
@@ -38,7 +81,7 @@ nearby agents' hidden states. Training combines actor-critic reinforcement
 learning with optional imitation of solver-generated plans.
 
 By default, both models use the same reward and observation settings and move
-in simultaneous timesteps. Historical environment profiles and sequential
+in simultaneous timesteps. Variant-specific environment profiles and sequential
 execution are also available. See [architecture](docs/ARCHITECTURE.md) for details.
 
 ## Installation
@@ -55,8 +98,7 @@ python -m pip install -e .
 
 For the pinned Linux x86_64 / Python 3.12 environment, install
 [requirements-lock-linux-cpu.txt](requirements-lock-linux-cpu.txt) before
-installing the project. Platform details are listed in
-[validation notes](docs/VALIDATION.md).
+installing the project.
 
 ## Quick start
 
@@ -84,14 +126,14 @@ python scripts/train.py --config configs/train_classic.json
 python scripts/train.py --config configs/train_improved.json
 ```
 
-To start from existing base weights:
+To fine-tune a saved model:
 
 ```bash
-python scripts/train.py --config configs/train_classic_finetune.json --init checkpoints/base/classic.pt
-python scripts/train.py --config configs/train_improved_finetune.json --init checkpoints/base/improved.pt
+python scripts/train.py --config configs/train_classic_finetune.json --init results/train_classic/checkpoint.pt
+python scripts/train.py --config configs/train_improved_finetune.json --init results/train_improved/checkpoint.pt
 ```
 
-The base weights must be supplied separately; they are not included in Git.
+Use a compatible `.pt` file from a completed training run; weights are excluded from Git.
 `--init` loads model parameters and starts a new optimizer and episode counter.
 
 | Run | Output directory |
@@ -134,7 +176,7 @@ restored checkpoint are removed before training continues. On interruption,
 the last saved checkpoint remains available.
 
 Resume requires a checkpoint from trainer `primal_joint_masked_v2`. Use
-`--init` for older checkpoints. See [model files](checkpoints/README.md).
+`--init` for older checkpoints.
 
 ## Fixed maps
 
@@ -142,18 +184,14 @@ Train or test on `maze`, `room`, and `warehouse` with either model:
 
 ```bash
 python scripts/fixed_map.py train --map maze --variant classic
-python scripts/fixed_map.py train --map maze --variant improved --init base
-python scripts/fixed_map.py evaluate --map maze --weights fine-tuned
+python scripts/fixed_map.py train --map maze --variant improved --init results/train_improved/checkpoint.pt
+python scripts/fixed_map.py evaluate --map maze --variant improved --checkpoint results/fixed_maps/maze/finetune_improved/checkpoint.pt
 ```
 
-Use `--weights trained` to evaluate new map-specific fine-tuning runs, or
-`--weights scratch` for runs trained from random weights. `--variant classic`
-or `--variant improved` selects a single model for evaluation. Training outputs
-are separated by map, variant, and initialization mode.
-
-See [fixed-map commands](docs/FIXED_MAPS.md) for all checkpoint groups, resume,
-custom budgets, and importing the six historical map-specific models. Historical
-weights are available locally but excluded from Git.
+Pass a `.pt` model file directly with `--checkpoint` for evaluation or `--init`
+for fine-tuning. `--resume` restores a training run, including optimizer state.
+Training outputs are separated by map, variant, and initialization mode.
+See [fixed-map commands](docs/FIXED_MAPS.md) for examples and custom budgets.
 
 ## Evaluation
 
@@ -172,7 +210,7 @@ python scripts/evaluate.py --config configs/experiments/agents.json
 python scripts/evaluate.py --config configs/experiments/maze.json
 ```
 
-The supplied experiment configurations reference base weights. For a solver-only
+The supplied experiment configurations reference the outputs of the training commands above. For a solver-only
 comparison, set `models` to `{}` and select algorithms in `solvers`.
 Evaluation requires an empty output directory.
 
@@ -195,9 +233,8 @@ rules. Solver timing includes the Python interface and, for CA*/CBS, process
 startup. Policy timing includes environment setup and trajectory validation.
 
 Use `"execution": "sequential"` and `"environment_profile": "historical"`
-for the earlier model execution settings. These differ from the default joint
-protocol and should be reported separately. Historical weights were trained
-under the earlier settings.
+for variant-specific observations and sequential movement. Report this protocol
+separately from evaluation with the common profile and joint movement.
 
 ## Building CA* and CBS
 
@@ -221,7 +258,7 @@ Create an animation from a fine-tuned model:
 
 ```bash
 python -m pip install -e ".[visualization]"
-python scripts/animate_policy.py --map maze --variant improved --agents 8 --seed 123 --output results/animations/maze
+python scripts/animate_policy.py --map maze --variant improved --checkpoint results/train_improved/checkpoint.pt --agents 8 --seed 123 --output results/animations/maze
 ```
 
 Change the map to `room` or `warehouse`, select `--variant classic`, or pass
@@ -243,9 +280,9 @@ python scripts/visualize.py --config configs/experiments/solvers_smoke.json --so
 
 ## Experiments
 
-[Research materials](research/README.md) contain the historical measurements,
-figures, and experiment scripts. Those results come from the earlier study;
-the current trainer uses a different training and evaluation protocol.
+[Benchmark results](research/README.md) include CSV measurements and figures for
+random maps, fixed maps, and fine-tuned models. Their training settings are not
+fully recorded, so they should be assessed separately from new training runs.
 
 A [short training example](docs/portfolio/README.md) includes three training seeds,
 shared test scenarios, raw measurements, and runtime metadata. To run it:
@@ -266,8 +303,7 @@ python scripts/verify_research.py
 python scripts/verify_provenance.py
 ```
 
-Tests requiring base weights or compiled libraries are skipped when those files
-are absent. CI runs separate Python and native-library jobs. Linux x86_64 with
+Tests requiring compiled libraries are skipped when those libraries are absent. CI runs separate Python and native-library jobs. Linux x86_64 with
 Python 3.12 is the locally tested platform; GPU, Windows, and macOS are untested.
 
 ## Layout
@@ -277,13 +313,11 @@ src/primal_mapf/   Networks, environment, training, evaluation, and solver adapt
 native/           CA* and CBS C++ sources
 configs/          Training and experiment settings
 scripts/          Command-line tools
-research/         Historical experiments and measurements
-docs/             Architecture, methodology, and example results
-checkpoints/      Model metadata and local weight locations
+research/         Benchmark measurements, figures, and integrity checksums
+docs/             Architecture, usage guides, and example results
 maps/             Moving AI maps
 results/          Local run outputs, excluded from Git
 tests/            Automated tests
-legacy/           Earlier training scripts
 third_party/      Licenses and source records
 ```
 

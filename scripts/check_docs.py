@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     count = 0
-    for directory in (ROOT, ROOT / "docs", ROOT / "native", ROOT / "research", ROOT / "checkpoints", ROOT / "legacy", ROOT / "maps", ROOT / "results"):
+    for directory in (ROOT, ROOT / "docs", ROOT / "native", ROOT / "research", ROOT / "maps", ROOT / "results"):
         paths = directory.glob("*.md") if directory == ROOT else directory.rglob("*.md")
         for path in paths:
             count += 1

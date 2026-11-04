@@ -1,9 +1,9 @@
 # Fine-tuned policy demonstrations
 
-These animations show the improved PRIMAL model using its historical map-specific
-checkpoint. Each displayed run has eight agents and seed 123. Actions are sampled
-from the legal-action policy using sequential execution and the historical
-environment profile, matching the execution style of these pretrained models.
+These animations show the improved PRIMAL model using map-specific
+pretrained weights. Each displayed run has eight agents and seed 123. Actions are sampled
+from the legal-action policy using sequential execution and the variant-specific
+environment profile (`historical` in the CLI).
 
 | Map | Agents | Timesteps | Goals reached | GIF | MP4 |
 | --- | --- | --- | --- | --- | --- |
@@ -23,7 +23,7 @@ using seed 123 and a limit of 512 timesteps. All six attempts completed. The
 eight-agent runs are shown here. [trials.csv](trials.csv) includes every attempt.
 This small set illustrates behavior on these scenarios; it is not an estimate
 of success over arbitrary maps, starts, or goals. The sequential protocol also
-differs from the common-profile joint protocol used by the default new experiments.
+differs from the common-profile joint protocol used by the default experiments.
 
 ## Reproduce
 
@@ -31,16 +31,15 @@ From the repository root:
 
 ```bash
 python -m pip install -e ".[visualization]"
-python scripts/animate_policy.py --map maze --variant improved --agents 8 --seed 123 --output results/animations/maze
-python scripts/animate_policy.py --map room --variant improved --agents 8 --seed 123 --output results/animations/room
-python scripts/animate_policy.py --map warehouse --variant improved --agents 8 --seed 123 --output results/animations/warehouse
+python scripts/animate_policy.py --map maze --variant improved --checkpoint results/fixed_maps/maze/train_improved/checkpoint.pt --agents 8 --seed 123 --output results/animations/maze
+python scripts/animate_policy.py --map room --variant improved --checkpoint results/fixed_maps/room/train_improved/checkpoint.pt --agents 8 --seed 123 --output results/animations/room
+python scripts/animate_policy.py --map warehouse --variant improved --checkpoint results/fixed_maps/warehouse/train_improved/checkpoint.pt --agents 8 --seed 123 --output results/animations/warehouse
 ```
 
-The command uses `checkpoints/fine_tuned/improved/<map>.pt` by default.
-Those files are local and excluded from Git; see
-[model import instructions](../FIXED_MAPS.md#historical-weights) if they are missing.
-Use `--variant classic` for the classic model or `--checkpoint PATH` for another
-compatible checkpoint. Use a new output directory for each run.
+With `--map`, provide an existing compatible `.pt` file using `--checkpoint`.
+Use `--variant classic` for the classic architecture and a new output directory
+for each run. New weights may produce different trajectories from the displayed examples.
+The recorded trajectories below can be rendered without model files.
 
 Add `--mp4` to also export a video; this requires `ffmpeg` on PATH. GIF export
 requires Pillow only. `--max-frames` controls the number of rendered states;

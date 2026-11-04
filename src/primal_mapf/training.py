@@ -1,8 +1,4 @@
-"""Single-process recurrent actor-critic and behavioral cloning trainer.
-
-This is a new, deterministic training entry point, not a reconstruction of
-the asynchronous process schedule used to obtain historical checkpoints.
-"""
+"""Single-process recurrent actor-critic and behavioral cloning trainer."""
 import csv
 import json
 from typing import NamedTuple

@@ -1,4 +1,4 @@
-"""Regenerate archived result figures with English labels, using CSV data."""
+"""Regenerate benchmark figures from the published CSV measurements."""
 import argparse
 import csv
 import hashlib
@@ -57,28 +57,22 @@ def plot(csv_path, destination, metric):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--manifest", default=str(ROOT/"research/historical/file_manifest.json"))
-    args = parser.parse_args()
-    manifest_path = Path(args.manifest)
-    records = json.loads(manifest_path.read_text())
+    parser.parse_args()
+    research = ROOT / "research"
+    checksums_path = research / "checksums.json"
+    checksums = json.loads(checksums_path.read_text())
     count = 0
-    for record in records:
-        path = ROOT/record["destination"]
-        if path.suffix != ".png" or "historical/results" not in path.as_posix():
-            continue
-        metric = next(value for value in ["success_rate", "makespan", "time"] if path.stem.endswith("_"+value))
-        stem = path.stem[:-(len(metric)+1)]
-        candidates = [path.parent/("raw_"+stem+".csv"), path.parent.parent/("raw_"+stem+".csv")]
-        csv_path = next((candidate for candidate in candidates if candidate.exists()), None)
-        if csv_path is None:
-            raise FileNotFoundError(f"No source CSV for {path}")
-        plot(csv_path, path, metric)
-        record["destination_sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
-        record["transformation"] = "English figure regenerated from archived measurements"
-        record["data_file"] = csv_path.relative_to(ROOT).as_posix()
-        count += 1
-    manifest_path.write_text(json.dumps(records, indent=2)+"\n")
-    print(f"Regenerated {count} historical figures with English labels.")
+    for csv_path in sorted((research / "results").rglob("raw_*.csv")):
+        stem = csv_path.stem.removeprefix("raw_")
+        for metric in ("success_rate", "makespan", "time"):
+            filename = f"{stem}_{metric}.png"
+            candidates = (csv_path.parent / "plots" / filename, csv_path.parent / filename)
+            path = next((candidate for candidate in candidates if candidate.exists()), candidates[0])
+            plot(csv_path, path, metric)
+            checksums[path.relative_to(research).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
+            count += 1
+    checksums_path.write_text(json.dumps(checksums, indent=2)+"\n")
+    print(f"Regenerated {count} benchmark figures.")
 
 
 if __name__ == "__main__":

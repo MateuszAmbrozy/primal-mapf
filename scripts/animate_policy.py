@@ -22,7 +22,7 @@ def main():
     source.add_argument("--map", choices=MAPS)
     source.add_argument("--from-trace", help="Render a previously recorded trajectory without running inference")
     parser.add_argument("--variant", choices=["classic","improved"], default="improved")
-    parser.add_argument("--checkpoint", help="Defaults to the selected map's fine-tuned checkpoint")
+    parser.add_argument("--checkpoint", help="Path to a .pt model file (required with --map)")
     parser.add_argument("--agents",type=int,default=8)
     parser.add_argument("--seed",type=int,default=123)
     parser.add_argument("--max-steps",type=int,default=512)
@@ -35,6 +35,8 @@ def main():
     parser.add_argument("--mp4",action="store_true",help="Also export MP4 using ffmpeg")
     parser.add_argument("--output",required=True)
     args = parser.parse_args()
+    if args.map and not args.checkpoint:
+        parser.error("--map requires --checkpoint PATH.pt")
     output = project_path(args.output)
     try:
         if output.exists() and any(output.iterdir()):
@@ -53,7 +55,7 @@ def main():
                 raise ValueError("Agent/step limits must be positive and seed non-negative")
             torch.set_num_threads(1)
             seed_all(args.seed)
-            checkpoint = args.checkpoint or f"checkpoints/fine_tuned/{args.variant}/{args.map}.pt"
+            checkpoint = args.checkpoint
             model = load_model(args.variant,checkpoint)
             grid,starts,goals = scenario(dict(map=MAPS[args.map],agents=args.agents),args.seed)
             begin = time.perf_counter()

@@ -9,7 +9,7 @@ import torch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/"src"))
 from primal_mapf.config import validate_config
 from primal_mapf.fixed_maps import (MAPS, apply_overrides, evaluation_config,
-                                    initial_weights, training_config)
+                                    training_config)
 from primal_mapf.runtime import project_path
 from primal_mapf.training import train
 from primal_mapf.evaluation.evaluate import evaluate
@@ -21,8 +21,7 @@ def main():
     for command in ("train", "evaluate"):
         sub = commands.add_parser(command)
         sub.add_argument("--map", choices=MAPS, required=True)
-        sub.add_argument("--variant", choices=["classic", "improved"] + (["both"] if command == "evaluate" else []),
-                         required=command == "train", default="both" if command == "evaluate" else None)
+        sub.add_argument("--variant", choices=["classic", "improved"], required=True)
         sub.add_argument("--episodes", type=int)
         sub.add_argument("--agents", type=int)
         sub.add_argument("--max-steps", type=int)
@@ -33,17 +32,16 @@ def main():
         sub.add_argument("--dry-run", action="store_true", help="Print the configuration without starting a run")
         if command == "train":
             source = sub.add_mutually_exclusive_group()
-            source.add_argument("--init", help="base, fine-tuned, or a checkpoint path")
+            source.add_argument("--init", help="Path to a .pt model file")
             source.add_argument("--resume", help="Resume using the configuration saved in this checkpoint")
             sub.add_argument("--expert", choices=["pibt", "ca", "cbs"])
         else:
-            sub.add_argument("--weights", choices=["base", "fine-tuned", "trained", "scratch"], default="fine-tuned")
-            sub.add_argument("--checkpoint", help="Override weights for a single selected variant")
+            sub.add_argument("--checkpoint", required=True, help="Path to a .pt model file")
             sub.add_argument("--solvers", nargs="*", choices=["pibt", "ca", "cbs"], help="Use --solvers alone to omit solvers")
     args = parser.parse_args()
     try:
         if args.command == "train":
-            init = initial_weights(args.map, args.variant, args.init)
+            init = args.init
             if args.resume:
                 saved = torch.load(project_path(args.resume), map_location="cpu", weights_only=True)
                 config = saved.get("config")
@@ -62,7 +60,7 @@ def main():
             else:
                 train(config, init=init, resume=args.resume)
         else:
-            config = apply_overrides(evaluation_config(args.map, args.weights, args.variant, args.checkpoint), args)
+            config = apply_overrides(evaluation_config(args.map, args.variant, args.checkpoint), args)
             if args.solvers is not None:
                 config["solvers"] = args.solvers
             validate_config(config, "evaluate")
@@ -72,7 +70,7 @@ def main():
                 missing = [path for path in config["models"].values() if not project_path(path).is_file()]
                 if missing:
                     raise FileNotFoundError("Missing model weights: " + ", ".join(missing) +
-                                            ". Select --weights base, import historical weights, or train on this map first.")
+                                            ". Provide an existing .pt file with --checkpoint.")
                 evaluate(config)
     except (ValueError, FileExistsError, FileNotFoundError) as exc:
         parser.error(str(exc))

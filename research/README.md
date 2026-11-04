@@ -1,67 +1,54 @@
-# Research materials
+# Benchmark results
 
-Measurements, figures, and scripts from the earlier MAPF experiments.
-These results belong to the earlier training setup; runs from the current
-trainer are saved separately in [`results/`](../results/README.md).
+CSV measurements and figures comparing the classic and improved PRIMAL models
+with planning baselines.
 
-## Contents
+| Directory | Experiments |
+| --- | --- |
+| `results/random/` | Agent count, map size, and obstacle density |
+| `results/fixed_maps/` | Models on maze, room, and warehouse maps |
+| `results/fixed_maps_fine_tuned/` | Map-specific fine-tuned models |
+| `results/fixed_maps_base_vs_fine_tuned/` | Models before and after fine-tuning |
+| `fine_tuning/improved/maze/` | Training reward figures |
 
-```text
-historical/
-  scripts/
-    random/                        Random-map experiments
-    fixed_maps/                    Base models on benchmark maps
-    fixed_maps_fine_tuned/          Fine-tuned models on benchmark maps
-    fixed_maps_base_vs_fine_tuned/  Base and fine-tuned model comparisons
-  results/                         CSV measurements and figures
-  file_manifest.json               Source paths and checksums
-fine_tuning/
-  improved/maze/                   Training curves
-```
+The collection includes 22 CSV datasets, 66 comparison figures, and two training
+figures. CSV files contain per-attempt measurements; plots show success rate,
+makespan, and computation time.
 
-There are 22 CSV datasets, 66 result figures, 20 Python scripts, nine map copies,
-and two training figures. Measurement values and row order are preserved.
-Algorithm labels and result-figure text use English. The training figures are
-kept in their original form because the per-episode data was unavailable.
+## Interpretation
 
-`run_01`, `run_02`, and files at experiment roots are separate source collections.
-Their overlap is unknown, so they should not be pooled as independent runs.
-Full historical training configurations, seeds, and commit identifiers are
-also unavailable.
+Full training configurations, seeds, and model revisions are not available for
+these measurements. They do not establish performance for models trained with
+the default configurations in this repository. Collections named `run_01`,
+`run_02`, and measurements at experiment roots may overlap; do not pool them as
+independent repetitions. Per-episode data for the two training figures is not
+included.
 
-## Check the data
+For an experiment with recorded settings, training seeds, and shared evaluation
+scenarios, see the [multi-seed example](../docs/portfolio/README.md).
+New runs write their outputs to [`results/`](../results/README.md).
 
-From the repository root:
+## Verify file integrity
 
 ```bash
 python scripts/verify_research.py
 ```
 
-The script checks files against
-[the manifest](historical/file_manifest.json). If the original research folders
-are available, `--source-root PATH` also checks source hashes and measurement
-rows after translating algorithm labels.
+[checksums.json](checksums.json) records SHA-256 hashes of the published data and
+figures. Verification requires only the Python standard library.
 
-## Regenerate plots
+## Regenerate figures
 
 ```bash
 python -m pip install -e ".[research]"
-python scripts/plot_historical_results.py
+python scripts/plot_results.py
 ```
 
-This overwrites the result figures and updates their hashes in the manifest.
-Commit or copy any versions you want to keep first. Existing CSV files and
-figures can be read without model checkpoints.
+This redraws the comparison figures from their CSV files and updates their
+checksums. It leaves measurements and training reward figures unchanged.
 
-## Experiment scripts
+## Run new comparisons
 
-The scripts retain their earlier sampling and evaluation logic, with imports
-and paths adapted to this repository. Some write to the working directory;
-run them in a separate copy if you want to preserve the archived results.
-They may require plotting dependencies, native solvers, and the appropriate
-[checkpoint files](../checkpoints/README.md).
-
-For new experiments, use `scripts/evaluate.py` and the configurations under
-`configs/experiments/`. The [main README](../README.md#evaluation) describes the
-current protocol; [MIGRATION.md](../docs/MIGRATION.md) explains the differences
-from the earlier setup.
+Use `scripts/evaluate.py` with the configurations in `configs/experiments/`.
+Set the model paths to your `.pt` files and choose a new output directory.
+See the [evaluation guide](../README.md#evaluation) for commands and metrics.

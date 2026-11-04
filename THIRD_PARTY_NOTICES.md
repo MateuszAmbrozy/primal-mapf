@@ -1,24 +1,22 @@
-# Sources, attribution, and distribution records
+# Third-party notices
 
 The root [MIT license](LICENSE) applies to this project's original contributions.
 It does not replace the licenses of incorporated third-party software or data.
-The records below distinguish verified upstream sources from unresolved history.
+Source references and license records are listed below.
 
 ## PRIMAL
 
 The classic network and grid-environment design are local adaptations of
 [PRIMAL](https://github.com/gsartoretti/PRIMAL), whose README credits
-Guillaume Sartoretti and Justin Kerr. The repository describes a PyTorch
-adaptation; it does not claim that PRIMAL or its original architecture was
-invented here.
+Guillaume Sartoretti and Justin Kerr. This project implements a PyTorch adaptation.
 
-The original local license copy is preserved in
-[PRIMAL.txt](third_party/licenses/PRIMAL.txt). An independently downloaded
-upstream license is preserved in
+The adaptation license is included in
+[PRIMAL.txt](third_party/licenses/PRIMAL.txt). The
+upstream license is included in
 [PRIMAL-upstream.txt](third_party/licenses/PRIMAL-upstream.txt), with its source
 revision and checksum in [the provenance record](third_party/primal_provenance.json).
 The license's existing copyright text is retained verbatim. The precise upstream
-revision from which the historical local adaptation was made is unknown.
+revision from which the local adaptation was made is unknown.
 
 ## PIBT
 
@@ -36,9 +34,7 @@ The algorithm and implementation are third-party contributions.
 
 The C++ implementations in `native/ca` and `native/cbs` were written by
 **Mateusz Ambroży** for this project and are covered by the root
-[MIT license](LICENSE). Their authorship was confirmed by the project author.
-Other MAPF repositories were consulted as implementation references; the
-specific repository URLs were not recorded.
+[MIT license](LICENSE).
 
 The original implementation notices are retained. PRIMAL, PIBT, and benchmark
 data have separate attribution and license records below and above.
@@ -47,9 +43,7 @@ data have separate attribution and license records below and above.
 
 The three maps in `maps/` were compared with the official Moving AI downloads;
 their text lines match. Provider URLs, hashes, and comparison results are in
-[maps/provenance.json](maps/provenance.json). Nine map copies inside the historical
-archive use the same filenames and are checked against those verified map texts
-by the local provenance checker.
+[maps/provenance.json](maps/provenance.json).
 
 Moving AI identifies its benchmark data as available under the
 [Open Data Commons Attribution License 1.0](https://opendatacommons.org/licenses/by/1-0/).
@@ -65,12 +59,11 @@ Map contents are retained; generated starts and goals are new instances and do
 not reproduce official scenario files. The maps are not relicensed under this
 project's MIT license.
 
-## Historical research materials
+## Experiment results
 
-Historical scripts, measurements, and figures were imported from the existing
-local research folders. Source paths, transformations, and checksums are retained
-in [the research manifest](research/historical/file_manifest.json).
-Historical measurements are not results of the current trainer.
+Project measurements and figures are included in [research/](research/README.md).
+Their evaluation settings and limitations are documented alongside the results.
+File integrity is checked with `python scripts/verify_research.py`.
 
-Run `python scripts/verify_provenance.py` to check recorded local hashes and
-archived map identity. This checks file identity against the recorded source hashes.
+Run `python scripts/verify_provenance.py` to check third-party source, license,
+and benchmark map hashes against their recorded values.

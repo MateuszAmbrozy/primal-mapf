@@ -1,4 +1,4 @@
-"""Run training, evaluation, and SVG export without historical checkpoints."""
+"""Run training, evaluation, and SVG export without pretrained weights."""
 import argparse
 import json
 import subprocess

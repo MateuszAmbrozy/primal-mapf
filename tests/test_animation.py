@@ -13,7 +13,7 @@ from primal_mapf.provenance import file_sha256
 
 class AnimationTests(unittest.TestCase):
     def record(self):
-        return dict(map_name='maze',variant='improved',checkpoint='checkpoints/fine_tuned/improved/maze.pt',
+        return dict(map_name='maze',variant='improved',checkpoint='results/my_model.pt',
                     agents=2,seed=123,execution='sequential',environment_profile='historical',
                     obstacles=[[0]*4 for _ in range(3)],starts=[(0,0),(2,3)],goals=[(0,2),(2,1)],
                     trace=[[(0,0),(2,3)],[(0,1),(2,2)],[(0,2),(2,1)]],success=True,makespan=2)

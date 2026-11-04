@@ -28,7 +28,7 @@ dist/
 *.ckpt
 checkpoint.tmp
 
-# New run outputs; historical research results remain tracked
+# New run outputs; published experiment results remain tracked
 /results/*
 !/results/README.md
 /runs/

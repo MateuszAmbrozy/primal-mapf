@@ -125,21 +125,6 @@ class WorkflowTests(unittest.TestCase):
                 with self.assertRaises(FileExistsError):
                     train(first)
 
-    def test_historical_models_and_evaluation(self):
-        if not all((ROOT/f"checkpoints/base/{variant}.pt").exists() for variant in ["classic", "improved"]):
-            self.skipTest("Download historical checkpoints to run compatibility checks")
-        for variant in ["classic", "improved"]:
-            model = load_model(variant, f"checkpoints/base/{variant}.pt")
-            obstacles, starts, goals = scenario(dict(agents=2,size=[8,8],density=0), 12)
-            success, steps = policy_episode(model, variant, obstacles, starts, goals, 2, 12)
-            self.assertIsInstance(success, bool)
-        with tempfile.TemporaryDirectory() as tmp:
-            config = json.loads((ROOT/"configs/experiments/smoke.json").read_text())
-            config["output"] = tmp
-            summary = evaluate(config)
-            self.assertEqual(set(summary), {"classic", "improved", "pibt"})
-            records = json.loads((Path(tmp)/"scenarios.json").read_text())
-            self.assertEqual(len(records), 1)
 
 
 if __name__ == "__main__":

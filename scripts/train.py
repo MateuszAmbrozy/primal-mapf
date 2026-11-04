@@ -13,7 +13,7 @@ if __name__ == "__main__":
     parser.add_argument("--config", required=True)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--resume", help="Continue a checkpoint created by this trainer")
-    group.add_argument("--init", help="Load model weights only, e.g. historical weights for fine-tuning")
+    group.add_argument("--init", help="Load model weights from a .pt file for fine-tuning")
     args = parser.parse_args()
     try:
         train(read_config(args.config), args.resume, args.init)

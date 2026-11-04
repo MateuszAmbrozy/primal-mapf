@@ -19,5 +19,5 @@ continuing if you want to keep it. `--init` only reads its source weights;
 episode count.
 
 The short runs created by `scripts/smoke.py` are installation checks.
-Historical study results are stored separately in
-[`research/historical/results/`](../research/historical/results/).
+Published benchmark results are stored separately in
+[`research/results/`](../research/results/).

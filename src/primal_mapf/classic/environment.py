@@ -1,4 +1,4 @@
-"""Compatibility interface retaining the historical classic settings."""
+"""Environment interface with classic model defaults."""
 from ..environment import MAPFEnv as BaseMAPFEnv, Map, PROFILES
 
 

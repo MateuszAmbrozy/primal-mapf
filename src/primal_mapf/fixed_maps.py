@@ -1,5 +1,5 @@
 """Configuration selection for fixed-map training and evaluation."""
-from .runtime import ROOT, project_path, read_config
+from .runtime import ROOT, read_config
 
 MAPS = {
     "maze": "maps/maze-32-32-4.map",
@@ -8,26 +8,19 @@ MAPS = {
 }
 
 
-def initial_weights(map_name: str, variant: str, value: str | None):
-    if value == "base":
-        return f"checkpoints/base/{variant}.pt"
-    if value == "fine-tuned":
-        return f"checkpoints/fine_tuned/{variant}/{map_name}.pt"
-    return value
-
-
 def training_config(map_name: str, variant: str, init=None) -> dict:
     mode = "finetune" if init else "train"
     return read_config(ROOT/f"configs/maps/{map_name}/{mode}_{variant}.json")
 
 
-def evaluation_config(map_name: str, weights: str, variant="both", checkpoint=None) -> dict:
-    config = read_config(ROOT/f"configs/maps/{map_name}/evaluate_{weights.replace('-', '_')}.json")
-    if checkpoint and variant == "both":
-        raise ValueError("--checkpoint requires --variant classic or improved")
-    if variant != "both":
-        config["models"] = {variant: checkpoint or config["models"][variant]}
-        config["output"] += f"_{variant}"
+def evaluation_config(map_name: str, variant: str, checkpoint: str) -> dict:
+    if variant not in ("classic", "improved"):
+        raise ValueError("Select --variant classic or improved")
+    if not checkpoint:
+        raise ValueError("Provide a model file with --checkpoint PATH.pt")
+    config = read_config(ROOT/f"configs/maps/{map_name}/evaluate_scratch.json")
+    config["models"] = {variant: checkpoint}
+    config["output"] = f"results/fixed_maps/{map_name}/evaluate_{variant}"
     return config
 
 
